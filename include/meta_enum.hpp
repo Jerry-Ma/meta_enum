@@ -188,60 +188,7 @@ constexpr std::array<EnumType, size> resolveEnumValuesArray(const std::initializ
 
 } // namespace meta_enum
 
-#define meta_enum(Type, UnderlyingType, ...)\
-    enum Type : UnderlyingType { __VA_ARGS__};\
-    constexpr static auto Type##_internal_size = []  () constexpr\
-    {\
-        using IntWrapperType = meta_enum::internal::IntWrapper<UnderlyingType>;\
-        IntWrapperType __VA_ARGS__;\
-        return std::initializer_list<IntWrapperType>{__VA_ARGS__}.size();\
-    };\
-    constexpr static auto Type##_meta = meta_enum::internal::parseMetaEnum<Type, UnderlyingType, Type##_internal_size()>(#__VA_ARGS__, []() {\
-        using IntWrapperType = meta_enum::internal::IntWrapper<UnderlyingType>;\
-        IntWrapperType __VA_ARGS__;\
-        return meta_enum::internal::resolveEnumValuesArray<Type, UnderlyingType, Type##_internal_size()>({__VA_ARGS__});\
-    }());\
-    constexpr static auto Type##_value_to_string = [](Type e)\
-    {\
-        for(const auto& member : Type##_meta.members)\
-        {\
-            if(member.value == e)\
-                return member.name;\
-        }\
-        return std::string_view("__INVALID_ENUM_VAL__");\
-    \
-    };\
-    constexpr static auto Type##_meta_from_name = [](std::string_view s) -> std::optional<meta_enum::MetaEnumMember<Type>>\
-    {\
-        for(const auto& member : Type##_meta.members)\
-        {\
-            if(member.name == s)\
-                return member;\
-        }\
-        return std::nullopt;\
-    \
-    };\
-    constexpr static auto Type##_meta_from_value = [] (Type v) -> std::optional<emta_enum::MetaEnumMember<Type>>\
-    {\
-        for(const auto& member : Type##_meta.members)\
-        {\
-            if(member.value == v)\
-                return member;\
-        }\
-        return std::nullopt;\
-    \
-    };\
-    constexpr static auto Type##_meta_from_index = [] (size_t i)\
-    {\
-        std::optional<meta_enum::MetaEnumMember<Type>> result;\
-        if(i < Type##_meta.members.size())\
-            result = Type##_meta.members[i];\
-        return result;\
-    \
-    };
-
-#define meta_enum_class(Type, UnderlyingType, ...)\
-    enum class Type : UnderlyingType { __VA_ARGS__};\
+#define meta_enum_impl(Type, UnderlyingType, ...)\
     constexpr static auto Type##_internal_size = [] () constexpr\
     {\
         using IntWrapperType = meta_enum::internal::IntWrapper<UnderlyingType>;\
@@ -290,4 +237,8 @@ constexpr std::array<EnumType, size> resolveEnumValuesArray(const std::initializ
             result = Type##_meta.members[i];\
         return result;\
     \
-    };
+    }
+
+#define meta_enum_class(Type, UnderlyingType, ...)\
+    enum class Type : UnderlyingType { __VA_ARGS__};\
+    meta_enum_impl(Type, UnderlyingType, ...)
