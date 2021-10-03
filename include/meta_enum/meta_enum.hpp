@@ -18,6 +18,7 @@ template <typename EnumType, typename UnderlyingTypeIn, size_t size>
 struct MetaEnum
 {
     using UnderlyingType = UnderlyingTypeIn;
+    std::string_view name;
     std::string_view string;
     std::array<MetaEnumMember<EnumType>, size> members = {};
 };
@@ -112,9 +113,10 @@ constexpr std::string_view parseEnumMemberName(std::string_view memberString)
 }
 
 template <typename EnumType, typename UnderlyingType, size_t size>
-constexpr MetaEnum<EnumType, UnderlyingType, size> parseMetaEnum(std::string_view in, const std::array<EnumType, size>& values)
+constexpr MetaEnum<EnumType, UnderlyingType, size> parseMetaEnum(std::string_view name, std::string_view in, const std::array<EnumType, size>& values)
 {
     MetaEnum<EnumType, UnderlyingType, size> result;
+    result.name = name;
     result.string = in;
 
     std::array<std::string_view, size> memberStrings;
@@ -196,7 +198,7 @@ constexpr std::array<EnumType, size> resolveEnumValuesArray(const std::initializ
         IntWrapperType __VA_ARGS__;\
         return std::initializer_list<IntWrapperType>{__VA_ARGS__}.size();\
     };\
-    constexpr static auto Type##_meta = meta_enum::internal::parseMetaEnum<Type, UnderlyingType, Type##_internal_size()>(#__VA_ARGS__, []() {\
+    constexpr static auto Type##_meta = meta_enum::internal::parseMetaEnum<Type, UnderlyingType, Type##_internal_size()>(#Type, #__VA_ARGS__, []() {\
         using IntWrapperType = meta_enum::internal::IntWrapper<UnderlyingType>;\
         IntWrapperType __VA_ARGS__;\
         return meta_enum::internal::resolveEnumValuesArray<Type, UnderlyingType, Type##_internal_size()>({__VA_ARGS__});\
@@ -248,7 +250,7 @@ constexpr std::array<EnumType, size> resolveEnumValuesArray(const std::initializ
         IntWrapperType __VA_ARGS__;\
         return std::initializer_list<IntWrapperType>{__VA_ARGS__}.size();\
     };\
-    constexpr static auto Type##_meta = meta_enum::internal::parseMetaEnum<Type, UnderlyingType, Type##_internal_size()>(#__VA_ARGS__, []() {\
+    constexpr static auto Type##_meta = meta_enum::internal::parseMetaEnum<Type, UnderlyingType, Type##_internal_size()>(#Type, #__VA_ARGS__, []() {\
         using IntWrapperType = meta_enum::internal::IntWrapper<UnderlyingType>;\
         IntWrapperType __VA_ARGS__;\
         return meta_enum::internal::resolveEnumValuesArray<Type, UnderlyingType, Type##_internal_size()>({__VA_ARGS__});\
